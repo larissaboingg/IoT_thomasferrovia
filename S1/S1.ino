@@ -35,6 +35,11 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  String mensagem = "Joao; ";
+  mensagem += "oi";
+
+  mqtt.publish(TOPIC.c_str(),mensagem.c_str());
+  mqtt.loop();
+  delay(2000);
 
 }
