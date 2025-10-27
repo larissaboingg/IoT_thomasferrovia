@@ -1,6 +1,7 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
 
+
 WiFiClient client;        //cria cliente wifi
 PubSubClient mqtt(client);  //fala que mqtt usa o cliente wifi
 
@@ -9,11 +10,17 @@ const String PASS = "8120gv08";
 
 const int PORT           =1883;
 const String URL         ="test.mosquitto.org";
-const String TOPIC       ="DSM2";
+
 const String broker_user ="";
 const String broker_pass = "";
 
+const String MyTopic = "Lk_topico"; // define onde voyu receber as mensagens 
+const String OtherTopic = "Et_topico"; // define para onde vou enviar as mensagens
+
+const int ledPin = 2;
+
 void setup() {
+  pinMode(ledPin, OUTPUT);
   Serial.begin(115200);
   Serial.println("Conectando ao Wifi");
   WiFi.begin(SSID,PASS);
@@ -31,15 +38,32 @@ void setup() {
     delay(200);
     Serial.print(".");
   }
+  mqtt.subscribe(MyTopic.c_str());
+  mqtt.setCallback(callback);
   Serial.println("\nConectado ao broker com sucesso!");
 }
 
 void loop() {
-  String mensagem = "Laura: ";
-  mensagem += "oi";
-
-  mqtt.publish(TOPIC.c_str(),mensagem.c_str());
+  String mensagem = "";
+  if (Serial.available()>0){
+  mensagem += Serial.readStringUntil('\n'); // le mensagens que o usuário digitou
+  mqtt.publish(OtherTopic.c_str(),mensagem.c_str()); // envia a mensagem para o topico do colega 
+  }
   mqtt.loop();
-  delay(2000);
 
+}
+void callback(char* topic, byte* payload, unsigned int length){
+    String mensagem = "";
+    for (int i = 0; i < length; i++){
+
+      mensagem +=(char)payload[i];
+    }
+Serial.print("Recebido:  ");
+Serial.println (mensagem);
+
+if (mensagem == "Acender"){
+  digitalWrite (2, HIGH);
+  } else if (mensagem == "Apagar"){
+  digitalWrite (2, LOW);
+  }
 }
