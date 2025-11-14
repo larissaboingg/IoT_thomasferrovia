@@ -1,26 +1,30 @@
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
 #include <PubSubClient.h>
 
 
-WiFiClient client;        //cria cliente wifi
+WiFiClientSecure client;        //cria cliente wifi
 PubSubClient mqtt(client);  //fala que mqtt usa o cliente wifi
 
 const String SSID = "FIESC_IOT_EDU";
 const String PASS = "8120gv08";
 
-const int PORT           =1883;
-const String URL         ="test.mosquitto.org";
+const int PORT           =8883;
+const String URL         ="c2388c77116243a0a57bd57d29c9b376.s1.eu.hivemq.cloud";
 
-const String broker_user ="";
-const String broker_pass = "";
 
-const String MyTopic = "Lk_topico"; // define onde voyu receber as mensagens 
-const String OtherTopic = "Et_topico"; // define para onde vou enviar as mensagens
+DEFINIR USER E SENHA
+const String broker_user ="Trem";
+const String broker_pass = "Laura123";
 
-const int ledPin = 2;
+const int ledPin1 = 1;
+const int ledPin2 = 2;
 
 void setup() {
-  pinMode(ledPin, OUTPUT);
+  pinMode(ledPin1, OUTPUT);
+  pinMode(ledPin2, OUTPUT);
+
+  client.setInsecure();
   Serial.begin(115200);
   Serial.println("Conectando ao Wifi");
   WiFi.begin(SSID,PASS);
@@ -38,19 +42,14 @@ void setup() {
     delay(200);
     Serial.print(".");
   }
-  mqtt.subscribe(MyTopic.c_str());
+  mqtt.subscribe("trem"); 
   mqtt.setCallback(callback);
   Serial.println("\nConectado ao broker com sucesso!");
 }
 
 void loop() {
-  String mensagem = "";
-  if (Serial.available()>0){
-  mensagem += Serial.readStringUntil('\n'); // le mensagens que o usuário digitou
-  mqtt.publish(OtherTopic.c_str(),mensagem.c_str()); // envia a mensagem para o topico do colega 
-  }
   mqtt.loop();
-
+  delay(10);
 }
 void callback(char* topic, byte* payload, unsigned int length){
     String mensagem = "";
@@ -58,12 +57,19 @@ void callback(char* topic, byte* payload, unsigned int length){
 
       mensagem +=(char)payload[i];
     }
+
 Serial.print("Recebido:  ");
 Serial.println (mensagem);
-
-if (mensagem == "Acender"){
-  digitalWrite (2, HIGH);
-  } else if (mensagem == "Apagar"){
-  digitalWrite (2, LOW);
-  }
+int vel = mensagem.toInt();  
+if (vel < 0){
+  digitalWrite(ledPin1,HIGH);
+  digitalWrite(ledPin2,LOW);
+}
+else if (vel < 0){
+  digitalWrite(ledPin1,LOW);
+  digitalWrite(ledPin2,HIGH);
+}
+else{
+  digitalWrite(ledPin1,LOW);
+  digitalWrite(ledPin2,LOW);
 }
