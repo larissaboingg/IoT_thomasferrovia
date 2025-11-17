@@ -12,13 +12,11 @@ const String PASS = "8120gv08";
 const int PORT           =8883;
 const String URL         ="c2388c77116243a0a57bd57d29c9b376.s1.eu.hivemq.cloud";
 
-
-DEFINIR USER E SENHA
-const String broker_user ="Trem";
+const String broker_user ="TREMM";
 const String broker_pass = "Laura123";
 
-const int ledPin1 = 1;
-const int ledPin2 = 2;
+const int ledPin1 = 18;
+const int ledPin2 = 21;
 
 void setup() {
   pinMode(ledPin1, OUTPUT);
@@ -65,11 +63,12 @@ if (vel < 0){
   digitalWrite(ledPin1,HIGH);
   digitalWrite(ledPin2,LOW);
 }
-else if (vel < 0){
+else if (vel > 0){
   digitalWrite(ledPin1,LOW);
   digitalWrite(ledPin2,HIGH);
 }
 else{
   digitalWrite(ledPin1,LOW);
   digitalWrite(ledPin2,LOW);
+}
 }
