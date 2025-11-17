@@ -21,10 +21,10 @@ const char* presenca_2 = "presenca2";
 const char* presenca_3 = "presenca3";
 
 const int ledPin = 2;
-const byte TRIGGER_1 = 5;
+const byte TRIGGER_1 = 4;
 const byte ECHO_1 = 12;
 
-const byte TRIGGER_2 = 6;
+const byte TRIGGER_2 = 14;
 const byte ECHO_2 = 13;
 
 void setup() {
