@@ -1,5 +1,6 @@
 #include <WiFiClientSecure.h>
 #include <PubSubClient.h>
+#include <WiFi.h>
 #include <DHT.h>
 
 #define DHTPIN 4
@@ -13,35 +14,33 @@ PubSubClient mqtt(client);  //fala que mqtt usa o cliente wifi
 const String SSID = "FIESC_IOT_EDU";
 const String PASS = "8120gv08";
 
-const int PORT           =1883;
-const String URL         ="test.mosquitto.org";
+const String URL         = "c2388c77116243a0a57bd57d29c9b376.s1.eu.hivemq.cloud";
+const int PORT           = 8883;
 
 
-#DEFINIR USER E SENHA NO HIVEMQ
-const String broker_user ="";
-const String broker_pass = "";
+const String broker_user = "Sensor1";
+const String broker_pass = "Gabriela123";
 
-##CRIAR OS TOPICOS
--presenca
--temperatura
--umidade
--iluminacao <-inscrever
+// ##CRIAR OS TOPICOS
+// -presenca
+// -temperatura
+// -umidade
+// -iluminacao <-inscrever
 
-const char* presenca_1    = "presenca_1";      //define de onde vou receber as msgs
-const char* tempertura    = "temperatura";
-const char* umidade       = "umidade";
-const char* iluminacao    = "iluminacao";
+const char* topicoPresenca_1    = "presenca_1";      //define de onde vou receber as msgs
+const char* topicoTemperatura    = "temperatura";
+const char* topicoUmidade       = "umidade";
+const char* topicoIluminacao    = "iluminacao";
 
-const int ledPin = 2;
+const int ledPin = 19;
 const int pinoLDR = 34;
-const int pinoDHT = 4;
 const int pinoUltra_echo = 23;
 const int pinoUltra_trig = 22;
 
 
 void setup() {
   Serial.begin(115200);
-dht.begin();
+  dht.begin();
   pinMode(ledPin, OUTPUT);
   pinMode(pinoUltra_trig, OUTPUT);
   pinMode(pinoUltra_echo, INPUT);
@@ -64,21 +63,22 @@ dht.begin();
     delay(200);
     Serial.print(".");
   }
-  mqtt.subscribe(       ); <-botar o topico iluminacao
+
+  mqtt.subscribe(topicoIluminacao);   
   mqtt.setCallback(callback);
   
   Serial.println("\nConectado ao broker com sucesso!");
-  pinMode(ledAzul, OUTPUT);
+  pinMode(ledPin, OUTPUT);
 }
 
 long lerDistancia() {
-  digitalWrite(TRIGGER_PIN, LOW);
+  digitalWrite(pinoUltra_trig, LOW);
   delayMicroseconds(2);
-  digitalWrite(TRIGGER_PIN, HIGH);
+  digitalWrite(pinoUltra_trig, HIGH);
   delayMicroseconds(10);
-  digitalWrite(TRIGGER_PIN, LOW);
+  digitalWrite(pinoUltra_trig, LOW);
   
-  long duracao = pulseIn(ECHO_PIN, HIGH);
+  long duracao = pulseIn(pinoUltra_echo, HIGH);
   long distancia = duracao * 349.24 / 2 / 10000;
   
   return distancia;
@@ -86,18 +86,17 @@ long lerDistancia() {
 
 void loop() {
   
-  int leituraLDR = analogRead(LDR_PIN);
+  int leituraLDR = analogRead(pinoLDR);
   float tensao = (leituraLDR * 3.3) / 4095.0;
   
   Serial.print("Leitura LDR: ");
   Serial.print(leituraLDR);
   Serial.print(" - Tensão: ");
   Serial.println(tensao);
-  
-  if (leituraLDR < 3000) {
-    mqtt.publish(presenca_1,"acender");
+  if (leituraLDR < 2800) {
+    mqtt.publish(topicoIluminacao,"acender");  
   } else {
-    mqtt.publish(presenca_1,"apagar");
+    mqtt.publish(topicoIluminacao,"apagar"); 
   }
 
   
@@ -108,29 +107,28 @@ void loop() {
   Serial.println(" cm");
   
   if (distancia < 10) {
-    mqtt.publish(presenca_1,"detectado");
+    mqtt.publish(topicoPresenca_1,"detectado"); 
   }
 
-  float umidade = dht.readHumidity(){
-    mqtt.publish(umidade, "detectado");
-  }
-  float temperatura = dht.readTemperature(){
-    mqtt.publish(temperatura, "detectado");
-  }  
+
+  float umidade = dht.readHumidity();
+  float temperatura = dht.readTemperature();
   
   if (isnan(umidade) || isnan(temperatura)) {
     Serial.println("Erro na leitura do DHT11");
-    return;
+  }else{
+    mqtt.publish(topicoUmidade, String(umidade).c_str()); 
+    mqtt.publish(topicoTemperatura, String(temperatura).c_str());
   }
   
   Serial.print("Umidade: ");
-  Serial.print(umidade);
+  Serial.print(umidade); 
   Serial.print("%  Temperatura: ");
-  Serial.print(temperatura);
+  Serial.print(temperatura); 
   Serial.println("°C");
 
   mqtt.loop();
-  delay(10);
+  delay(500);
 }
 
 void callback(char* topic, byte* payload, unsigned int length){
