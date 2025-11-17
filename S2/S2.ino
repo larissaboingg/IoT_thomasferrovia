@@ -1,3 +1,4 @@
+#include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <PubSubClient.h>
 
@@ -109,7 +110,7 @@ void loop() {
   }
 
   mqtt.loop();
-  delay(10);
+  delay(500);
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
@@ -119,7 +120,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
   }
   Serial.print("Recebido: ");
   Serial.println(mensagem);
-  else if (topic == iluminacao && mensagem == "acender") {
+  if (topic == iluminacao && mensagem == "acender") {
     digitalWrite(ledPin, HIGH);
   }
   else if (topic == iluminacao && mensagem == "apagar") {
