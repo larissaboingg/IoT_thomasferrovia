@@ -21,16 +21,13 @@ const int PORT           = 8883;
 const String broker_user = "Sensor1";
 const String broker_pass = "Gabriela123";
 
-// ##CRIAR OS TOPICOS
-// -presenca
-// -temperatura
-// -umidade
-// -iluminacao <-inscrever
-
+//  TOPICOS
 const char* topicoPresenca_1    = "presenca_1";      //define de onde vou receber as msgs
 const char* topicoTemperatura    = "temperatura";
 const char* topicoUmidade       = "umidade";
 const char* topicoIluminacao    = "iluminacao";
+//  TOPICOS
+
 
 const int ledPin = 19;
 const int pinoLDR = 34;
@@ -41,6 +38,7 @@ const int pinoUltra_trig = 22;
 void setup() {
   Serial.begin(115200);
   dht.begin();
+
   pinMode(ledPin, OUTPUT);
   pinMode(pinoUltra_trig, OUTPUT);
   pinMode(pinoUltra_echo, INPUT);
@@ -53,9 +51,12 @@ void setup() {
     delay(200);
   }
   Serial.println("\nConectado!");
+
   client.setInsecure();
+
   Serial.println("Conectando ao broker...");
   mqtt.setServer(URL.c_str(),PORT);
+
   while(!mqtt.connected()){
     String ID = "S1-";
     ID += String(random(0xffff),HEX);
@@ -86,6 +87,7 @@ long lerDistancia() {
 
 void loop() {
   
+  //Sensor Iluminação
   int leituraLDR = analogRead(pinoLDR);
   float tensao = (leituraLDR * 3.3) / 4095.0;
   
@@ -99,7 +101,7 @@ void loop() {
     mqtt.publish(topicoIluminacao,"apagar"); 
   }
 
-  
+  //Sensor DistanciA
   long distancia = lerDistancia();
   
   Serial.print("Distância: ");
@@ -110,7 +112,7 @@ void loop() {
     mqtt.publish(topicoPresenca_1,"detectado"); 
   }
 
-
+  //Sensor de Temperatura
   float umidade = dht.readHumidity();
   float temperatura = dht.readTemperature();
   
@@ -131,6 +133,7 @@ void loop() {
   delay(500);
 }
 
+//Envia as mensagens para os demais
 void callback(char* topic, byte* payload, unsigned int length){
   String mensagem = "";
   for(int i = 0; i < length; i++){
